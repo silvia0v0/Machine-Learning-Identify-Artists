@@ -65,10 +65,16 @@ y_train = y_train_all[:train_count]
 x_val = x_train_all[train_count:train_count+2000]
 y_val = y_train_all[train_count:train_count+2000]
 
+x_test = np.array(test_dict['data'])
+y_test = np.array(test_dict['labels'])
+print(x_test.shape)
+print(y_test.shape)
+
 
 '''normalization'''
 x_train_normalized = x_train/255
 x_val_normalized = x_val/255
+x_test_normalized = x_test/255
 
 
 '''mini-batch preparation'''
@@ -167,3 +173,41 @@ plt.plot(x_axis, train_accu_list, label='train acc')
 plt.plot(x_axis, val_accu_list, label='val acc')
 plt.legend()
 plt.show()
+
+
+
+
+'''testing'''
+
+# Test Method 1
+pred_ = torch.zeros(473).long()
+
+for i in range(473): # for each artwork
+    
+    l = len(x_test_normalized[i])
+    X_test_tensor = torch.Tensor(x_test_normalized[i].reshape(l, 3, 64, 64))
+    y_test_pred = conv_net.forward(X_test_tensor)
+    
+    _ ,pred_class = y_test_pred.max(dim=1)
+    
+    
+    y_test_artwork_pred = max([(pred_class == i).sum().item() for i in range(4)])
+    pred_[i] = y_test_artwork_pred
+
+
+# convert testing label to tensor and to type long
+y_test_tensor = torch.Tensor(y_test).long()
+
+correct = (pred_ == y_test_tensor).sum().item()
+n = y_test_tensor.shape[0]
+
+
+
+
+
+test_accu = correct/n
+ 
+print("Test Accuracy:", test_accu)
+
+
+
