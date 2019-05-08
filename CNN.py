@@ -180,34 +180,48 @@ plt.show()
 '''testing'''
 
 # Test Method 1
-pred_ = torch.zeros(473).long()
+# convert testing label to tensor and to type long
+y_test_tensor = torch.Tensor(y_test).long()
+
+pred_1 = torch.zeros(473).long()
+pred_2 = torch.zeros(473).long()
 
 for i in range(473): # for each artwork
+    prob = torch.zeros(4)
     
     l = len(x_test_normalized[i])
     X_test_tensor = torch.Tensor(x_test_normalized[i].reshape(l, 3, 64, 64))
     y_test_pred = conv_net.forward(X_test_tensor)
     
+    for j in range(l):
+        for k in range(4):
+            prob[k] += y_test_pred[j][k]
+            
+
     _ ,pred_class = y_test_pred.max(dim=1)
     
+    l0 = [(pred_class == i).sum().item() for i in range(4)]
+    print(l0)
     
-    y_test_artwork_pred = max([(pred_class == i).sum().item() for i in range(4)])
-    pred_[i] = y_test_artwork_pred
+    y_test_artwork_pred1 = l0.index(max(l0))
+    y_test_artwork_pred2 = prob.max(0)[1]
+    
+    print("test pred of artwork", y_test_artwork_pred1)
+    print(y_test_tensor[i])
+    pred_1[i] = y_test_artwork_pred1
+    pred_2[i] = y_test_artwork_pred2
 
 
-# convert testing label to tensor and to type long
-y_test_tensor = torch.Tensor(y_test).long()
 
-correct = (pred_ == y_test_tensor).sum().item()
+correct1 = (pred_1 == y_test_tensor).sum().item()
+correct2 = (pred_2 == y_test_tensor).sum().item()
 n = y_test_tensor.shape[0]
 
-
-
-
-
-test_accu = correct/n
+test_accu1 = correct1 / n
+test_accu2 = correct2 / n
  
-print("Test Accuracy:", test_accu)
+print("Test1 Accuracy:", test_accu1)
+print("Test2 Accuracy:", test_accu2)
 
 
 
